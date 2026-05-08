@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>billdr — Facturar bien es cobrar mejor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --bg-2: #060606;
+    --bg-3: #0c0c0c;
+    --bg-4: #141414;
+    --line: #161616;
+    --line-2: #1f1f1f;
+    --line-3: #2a2a2a;
+    --ink: #ffffff;
+    --ink-soft: #b8b8b8;
+    --ink-mute: #6b6b6b;
+    --ink-dim: #8a8a8a;
+    --accent: #2D5BFF;
+    --accent-bright: #4070ff;
+    --accent-soft: rgba(45, 91, 255, 0.12);
+    --accent-glow: rgba(45, 91, 255, 0.25);
+    --accent-line: rgba(45, 91, 255, 0.4);
+    --warn: #ff5c5c;
+    --success: #4ade80;
+    --display: 'Geist', system-ui, sans-serif;
+    --body: 'Inter Tight', system-ui, sans-serif;
+    --mono: 'Geist Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    background-position: -1px -1px;
+  }
+
+  ::selection { background: var(--accent); color: var(--ink); }
+
+  .container { max-width: 1440px; margin: 0 auto; padding: 0 32px; }
+
+  /* SCROLL PROGRESS BAR */
+  .scroll-progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--accent);
+    z-index: 200;
+    width: 0%;
+    transition: width 0.05s linear;
+    box-shadow: 0 0 8px var(--accent-glow);
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 22px 32px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner { max-width: 1440px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .logo {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    text-decoration: none;
+    text-transform: lowercase;
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+  }
+  .logo::after {
+    content: '';
+    width: 5px; height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    align-self: flex-end;
+    margin-bottom: 4px;
+    margin-left: 1px;
+  }
+  .nav-links { display: flex; gap: 32px; align-items: center; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; }
+  .nav-links a { color: var(--ink-dim); text-decoration: none; transition: color 0.2s; font-weight: 500; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--accent);
+    color: var(--ink) !important;
+    padding: 8px 16px;
+    border-radius: 100px;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  .nav-cta:hover {
+    background: var(--accent-bright);
+    transform: translateY(-1px);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    padding: 140px 0 80px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -300px;
+    left: 60%;
+    transform: translateX(-50%);
+    width: 1000px;
+    height: 700px;
+    background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 60%);
+    filter: blur(40px);
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .hero-bg-numeral {
+    position: absolute;
+    top: 50%;
+    right: -80px;
+    transform: translateY(-50%);
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(400px, 60vw, 800px);
+    line-height: 0.8;
+    color: var(--bg);
+    -webkit-text-stroke: 1px rgba(255,255,255,0.04);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  .hero-meta-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--ink-mute);
+    margin-bottom: 80px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 500;
+  }
+  .hero-meta-top div:nth-child(2) { text-align: center; }
+  .hero-meta-top div:nth-child(3) { text-align: right; }
+  .hero-meta-top strong { color: var(--accent); font-weight: 600; }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 48px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    opacity: 0;
+    animation: fadeInLeft 1s ease-out 0.2s forwards;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(56px, 11vw, 180px);
+    line-height: 0.88;
+    letter-spacing: -0.05em;
+    color: var(--ink);
+    max-width: 1100px;
+  }
+
+  .hero h1 .word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(80px);
+    animation: wordReveal 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .hero h1 .word:nth-child(1) { animation-delay: 0.1s; }
+  .hero h1 .word:nth-child(2) { animation-delay: 0.2s; }
+  .hero h1 .word:nth-child(3) { animation-delay: 0.3s; }
+  .hero h1 .word:nth-child(4) { animation-delay: 0.5s; }
+  .hero h1 .word:nth-child(5) { animation-delay: 0.6s; }
+
+  .hero h1 .accent {
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  @keyframes wordReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .hero-bottom {
+    margin-top: 80px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 60px;
+    align-items: end;
+    opacity: 0;
+    animation: fadeInUp 1.2s ease-out 0.9s forwards;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-desc {
+    font-size: 19px;
+    line-height: 1.45;
+    max-width: 540px;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  .hero-cta-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--ink);
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s ease;
+  }
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+  .btn-primary:hover {
+    background: var(--accent-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px var(--accent-glow);
+  }
+
+  .btn-secondary {
+    color: var(--ink);
+    border-color: var(--line-3);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .btn-secondary:hover {
+    border-color: var(--ink-soft);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .btn-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+  .btn:hover .btn-arrow { transform: translateX(4px); }
+
+  /* TICKER */
+  .ticker {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+    background: var(--bg-2);
+    padding: 20px 0;
+  }
+  .ticker-track {
+    display: flex;
+    gap: 64px;
+    animation: tickerScroll 35s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+    will-change: transform;
+  }
+  .ticker-item {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ticker-item .accent { color: var(--accent); font-weight: 700; }
+  .ticker-item::after {
+    content: '✦';
+    color: var(--accent);
+    font-size: 10px;
+    margin-left: 32px;
+  }
+  @keyframes tickerScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* MARQUEE BIG */
+  .marquee {
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+    padding: 40px 0;
+  }
+  .marquee-track {
+    display: flex;
+    gap: 80px;
+    animation: scroll 60s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+    will-change: transform;
+  }
+  .marquee-item {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(56px, 9vw, 140px);
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 80px;
+  }
+  .marquee-item.outline {
+    -webkit-text-stroke: 1px var(--ink);
+    color: transparent;
+  }
+  .marquee-item::after {
+    content: '◆';
+    color: var(--accent);
+    font-size: 0.3em;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* SECTION LABELS */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-weight: 600;
+  }
+  .section-label::before {
+    content: '◆';
+    font-size: 8px;
+  }
+
+  /* HEADINGS */
+  .display-h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(48px, 8vw, 140px);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+    margin-bottom: 32px;
+  }
+  .display-h2 .accent { color: var(--accent); }
+  .display-h2 .dim { color: var(--ink-dim); font-weight: 400; }
+
+  /* PROBLEMA */
+  .problema {
+    padding: 180px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bg-numeral {
+    position: absolute;
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(280px, 40vw, 600px);
+    line-height: 0.8;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.04);
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+  }
+
+  .bg-numeral.right {
+    right: -60px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .bg-numeral.left {
+    left: -60px;
+    bottom: -100px;
+  }
+
+  .problema-grid {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .problema-text h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(40px, 6vw, 96px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    margin-bottom: 32px;
+  }
+  .problema-text h2 .dim { color: var(--ink-dim); font-weight: 400; }
+  .problema-text p {
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 440px;
+    margin-bottom: 16px;
+  }
+
+  .problema-list {
+    border-top: 1px solid var(--line);
+  }
+
+  .problema-row {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 32px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+    transition: padding-left 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.4s ease;
+    cursor: default;
+    position: relative;
+  }
+
+  .problema-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 0; height: 100%;
+    background: linear-gradient(90deg, var(--accent-soft), transparent);
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: -1;
+  }
+  .problema-row:hover {
+    padding-left: 32px;
+  }
+  .problema-row:hover::before {
+    width: 100%;
+  }
+
+  .problema-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.15em;
+    font-weight: 500;
+  }
+  .problema-content h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .problema-content p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    max-width: 540px;
+  }
+  .problema-arrow {
+    font-family: var(--mono);
+    color: var(--ink-mute);
+    transition: color 0.3s, transform 0.3s;
+    font-size: 18px;
+  }
+  .problema-row:hover .problema-arrow {
+    color: var(--accent);
+    transform: translateX(8px);
+  }
+
+  /* QUOTE */
+  .quote-section {
+    padding: 220px 0;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .quote-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, var(--accent-soft) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .quote-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+
+  .quote-content blockquote {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(36px, 6vw, 88px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    margin-bottom: 56px;
+    color: var(--ink);
+  }
+  .quote-content blockquote .dim { color: var(--ink-dim); font-weight: 400; }
+  .quote-content blockquote .accent { color: var(--accent); }
+
+  .quote-content cite {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-style: normal;
+    color: var(--ink-mute);
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    font-weight: 500;
+  }
+  .quote-content cite::before,
+  .quote-content cite::after {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* SOLUCION */
+  .solucion {
+    padding: 180px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .solucion-header {
+    margin-bottom: 120px;
+    max-width: 1100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .solucion-header h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(48px, 9vw, 160px);
+    line-height: 0.88;
+    letter-spacing: -0.05em;
+    margin-bottom: 32px;
+  }
+  .solucion-header h2 .accent { color: var(--accent); }
+  .solucion-header p {
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 600px;
+  }
+
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .pillar {
+    padding: 56px 32px;
+    border-right: 1px solid var(--line);
+    transition: background 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .pillar::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 2px;
+    background: var(--accent);
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pillar:hover::after { width: 100%; }
+  .pillar:last-child { border-right: none; }
+  .pillar:hover { background: var(--bg-2); }
+
+  .pillar-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.2em;
+    margin-bottom: 80px;
+    display: block;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .pillar h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 56px;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 24px;
+    color: var(--ink);
+  }
+  .pillar p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  /* DASHBOARD */
+  .dashboard-wrap { margin-top: 80px; padding: 0 32px; position: relative; z-index: 1; }
+  .dashboard-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+    font-weight: 500;
+  }
+  .dashboard-meta strong { color: var(--accent); font-weight: 600; }
+
+  .dashboard-mock {
+    background: var(--bg);
+    border: 1px solid var(--line-2);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8), 0 0 100px var(--accent-soft);
+    position: relative;
+  }
+  .dashboard-mock::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 25%;
+    right: 25%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .dashboard-bar {
+    background: var(--bg-2);
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dashboard-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line-3); }
+  .dashboard-url {
+    margin-left: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    background: var(--bg);
+    padding: 5px 12px;
+    border-radius: 4px;
+    flex: 1;
+    max-width: 320px;
+    border: 1px solid var(--line);
+    font-weight: 500;
+  }
+  .dashboard-body { padding: 32px; }
+  .dashboard-title {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+    color: var(--ink);
+  }
+  .dashboard-title .accent { color: var(--accent); }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .stat-box {
+    border: 1px solid var(--line-2);
+    border-radius: 6px;
+    padding: 18px;
+    background: var(--bg-2);
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .stat-box:hover {
+    border-color: var(--accent-line);
+    transform: translateY(-2px);
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  .stat-value {
+    font-family: var(--display);
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.03em;
+  }
+  .stat-trend {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--success);
+    letter-spacing: 0.02em;
+    font-weight: 500;
+  }
+  .stat-trend.warn { color: var(--warn); }
+
+  .invoice-list { border-top: 1px solid var(--line); }
+  .invoice-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 90px 110px 90px;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    align-items: center;
+    transition: background 0.3s;
+  }
+  .invoice-row:hover { background: var(--bg-2); }
+  .invoice-row.header {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  .invoice-row.header:hover { background: transparent; }
+  .invoice-num {
+    font-family: var(--mono);
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .invoice-status {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: all 0.5s ease;
+  }
+  .invoice-status.paid { background: rgba(74, 222, 128, 0.1); color: var(--success); border: 1px solid rgba(74, 222, 128, 0.2); }
+  .invoice-status.pending { background: rgba(255, 165, 0, 0.1); color: orange; border: 1px solid rgba(255, 165, 0, 0.2); }
+  .invoice-status.overdue { background: rgba(255, 92, 92, 0.1); color: var(--warn); border: 1px solid rgba(255, 92, 92, 0.2); }
+
+  /* FEATURES */
+  .features-big {
+    padding: 180px 0;
+    background: var(--bg-2);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    margin-top: 80px;
+    border: 1px solid var(--line);
+    position: relative;
+    z-index: 1;
+  }
+
+  .feature-block {
+    background: var(--bg-2);
+    padding: 56px 48px;
+    transition: background 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-block::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 0; height: 1px;
+    background: var(--accent);
+    transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .feature-block:hover::before { width: 100%; }
+  .feature-block:hover { background: var(--bg-3); }
+
+  .feature-block-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+    margin-bottom: 56px;
+    font-weight: 500;
+  }
+  .feature-block-tag {
+    padding: 4px 10px;
+    border: 1px solid var(--line-3);
+    border-radius: 100px;
+    font-weight: 600;
+  }
+  .feature-block-tag.mvp {
+    color: var(--accent);
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+  }
+  .feature-block h4 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(28px, 3.5vw, 48px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    margin-bottom: 20px;
+    max-width: 480px;
+    color: var(--ink);
+  }
+  .feature-block h4 .accent { color: var(--accent); }
+  .feature-block p {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 440px;
+  }
+
+  /* TESTIMONIO */
+  .testimonio {
+    padding: 220px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .testimonio::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center top, var(--accent-soft) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .testimonio-quote {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(36px, 6vw, 96px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    margin-bottom: 56px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    color: var(--ink);
+    position: relative;
+  }
+  .testimonio-quote .accent { color: var(--accent); }
+
+  .testimonio-author {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--ink-mute);
+    position: relative;
+    font-weight: 500;
+  }
+  .testimonio-author-line { width: 24px; height: 1px; background: var(--ink-mute); }
+
+  /* PRICING */
+  .pricing { padding: 180px 0; border-top: 1px solid var(--line); position: relative; overflow: hidden; }
+  .pricing-header { margin-bottom: 80px; max-width: 1100px; position: relative; z-index: 1; }
+  .pricing-header h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(48px, 8vw, 130px);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+    margin-bottom: 24px;
+  }
+  .pricing-header h2 .dim { color: var(--ink-dim); font-weight: 400; }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+    position: relative;
+    z-index: 1;
+  }
+  .price-col {
+    padding: 56px 32px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    transition: background 0.3s ease, transform 0.3s ease;
+    position: relative;
+  }
+  .price-col:last-child { border-right: none; }
+  .price-col:hover { background: var(--bg-2); transform: translateY(-4px); }
+
+  .price-col.featured {
+    background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 100%);
+    border-left: 1px solid var(--accent-line);
+    border-right: 1px solid var(--accent-line);
+    position: relative;
+  }
+  .price-col.featured:hover {
+    background: linear-gradient(180deg, var(--accent-soft) 0%, var(--bg-2) 100%);
+  }
+  .price-col.featured::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .price-col-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+    margin-bottom: 32px;
+    font-weight: 600;
+  }
+  .price-col.featured .price-col-name { color: var(--accent); }
+
+  .price-amount {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 80px;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .price-amount span {
+    font-size: 22px;
+    color: var(--ink-mute);
+    font-weight: 400;
+  }
+  .price-period {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-mute);
+    margin-bottom: 40px;
+    font-weight: 500;
+  }
+  .price-features { list-style: none; margin-bottom: 40px; }
+  .price-features li {
+    padding: 12px 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .price-features li::before { content: '─'; color: var(--accent); flex-shrink: 0; }
+
+  .price-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink);
+    text-decoration: none;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--ink);
+    transition: gap 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    font-weight: 600;
+  }
+  .price-cta:hover { gap: 18px; color: var(--accent); border-color: var(--accent); }
+
+  /* CTA FINAL */
+  .cta-final {
+    padding: 200px 0 140px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+  }
+  .cta-final::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, var(--accent-glow) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .cta-final-content { position: relative; z-index: 2; }
+  .cta-final h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(56px, 10vw, 200px);
+    line-height: 0.88;
+    letter-spacing: -0.05em;
+    margin-bottom: 56px;
+    color: var(--ink);
+  }
+  .cta-final h2 .accent { color: var(--accent); }
+  .cta-final-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg-2);
+    color: var(--ink);
+    padding: 80px 0 40px;
+    border-top: 1px solid var(--line);
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 80px;
+  }
+  .footer-brand .logo { font-size: 36px; margin-bottom: 24px; display: inline-flex; }
+  .footer-brand p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 320px;
+  }
+  .footer-col h6 {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+    margin-bottom: 24px;
+    font-weight: 600;
+  }
+  .footer-col a {
+    display: block;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 6px 0;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+  .footer-col a:hover { color: var(--ink); }
+  .footer-bottom {
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-mute);
+    font-weight: 500;
+  }
+
+  /* REVEAL ON SCROLL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* LINE DRAW ON SCROLL */
+  .draw-line {
+    background: linear-gradient(90deg, var(--accent) 50%, var(--line) 50%);
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    transition: background-position 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    height: 1px;
+    width: 100%;
+    border: none;
+    margin: 0;
+  }
+  .draw-line.drawn { background-position: 0 0; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .container { padding: 0 24px; }
+    nav { padding: 18px 24px; }
+    .nav-links { gap: 14px; }
+    .nav-links a:not(.nav-cta) { display: none; }
+    .hero { padding: 120px 0 60px; }
+    .hero-meta-top { grid-template-columns: 1fr; gap: 8px; margin-bottom: 56px; }
+    .hero-meta-top div { text-align: left !important; }
+    .hero-content { padding: 0 24px; }
+    .hero-bottom { grid-template-columns: 1fr; gap: 32px; }
+    .hero-cta-group { align-items: flex-start; }
+    .hero-bg-numeral { display: none; }
+    .problema-grid { grid-template-columns: 1fr; gap: 60px; }
+    .problema-row { grid-template-columns: 40px 1fr; }
+    .problema-arrow { display: none; }
+    .pillars { grid-template-columns: 1fr; }
+    .pillar { border-right: none; border-bottom: 1px solid var(--line); }
+    .pillar-num { margin-bottom: 32px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .price-col { border-right: none; border-bottom: 1px solid var(--line); }
+    .price-col.featured { border-left: none; border-right: none; }
+    .footer-top { grid-template-columns: 1fr; gap: 40px; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .invoice-row { grid-template-columns: 1fr 80px; gap: 8px; }
+    .invoice-row > *:nth-child(1), .invoice-row > *:nth-child(3), .invoice-row > *:nth-child(4) { display: none; }
+    .dashboard-wrap { padding: 0 24px; }
+    .bg-numeral { display: none; }
+    section { padding: 100px 0 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">billdr</a>
+    <div class="nav-links">
+      <a href="#producto">Producto</a>
+      <a href="#funcionalidades">Funcionalidades</a>
+      <a href="#precios">Planes</a>
+      <a href="#contacto" class="nav-cta">Empezar</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow" id="heroGlow"></div>
+  <div class="hero-bg-numeral">01</div>
+
+  <div class="hero-content">
+    <div class="hero-meta-top">
+      <div>Est. <strong>2026</strong> — CABA, Argentina</div>
+      <div>Infraestructura de cobro</div>
+      <div>Capítulo 01 / <strong>Producto</strong></div>
+    </div>
+
+    <div class="hero-eyebrow">Una nueva forma de cobrar abonos</div>
+
+    <h1>
+      <span class="word">Facturar</span> <span class="word">bien</span><br>
+      <span class="word">es</span> <span class="word accent">cobrar</span> <span class="word accent">mejor.</span>
+    </h1>
+
+    <div class="hero-bottom">
+      <p class="hero-desc">
+        billdr automatiza facturación recurrente, conciliación y cobro para empresas de servicios en Argentina. Configurás una vez. La plataforma trabaja por vos.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#contacto" class="btn btn-primary">Sumate a la lista <span class="btn-arrow">→</span></a>
+        <a href="#producto" class="btn btn-secondary">Conocer más <span class="btn-arrow">↓</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker" id="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="accent">$4.2M</span> facturado mensual</span>
+    <span class="ticker-item"><span class="accent">90.4%</span> tasa de cobro</span>
+    <span class="ticker-item"><span class="accent">↑12%</span> crecimiento M/M</span>
+    <span class="ticker-item"><span class="accent">100%</span> integrado con ARCA</span>
+    <span class="ticker-item"><span class="accent">+78%</span> tiempo ahorrado</span>
+    <span class="ticker-item"><span class="accent">A·B·C·E·X</span> tipos de comprobante</span>
+    <span class="ticker-item"><span class="accent">$4.2M</span> facturado mensual</span>
+    <span class="ticker-item"><span class="accent">90.4%</span> tasa de cobro</span>
+    <span class="ticker-item"><span class="accent">↑12%</span> crecimiento M/M</span>
+    <span class="ticker-item"><span class="accent">100%</span> integrado con ARCA</span>
+    <span class="ticker-item"><span class="accent">+78%</span> tiempo ahorrado</span>
+    <span class="ticker-item"><span class="accent">A·B·C·E·X</span> tipos de comprobante</span>
+  </div>
+</div>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">Facturación recurrente</span>
+    <span class="marquee-item outline">Conciliación</span>
+    <span class="marquee-item">Cobro automatizado</span>
+    <span class="marquee-item outline">Integrado con ARCA</span>
+    <span class="marquee-item">Facturación recurrente</span>
+    <span class="marquee-item outline">Conciliación</span>
+    <span class="marquee-item">Cobro automatizado</span>
+    <span class="marquee-item outline">Integrado con ARCA</span>
+  </div>
+</div>
+
+<!-- PROBLEMA -->
+<section class="problema" id="problema">
+  <div class="bg-numeral right">II</div>
+  <div class="container">
+    <div class="problema-grid">
+      <div class="problema-text reveal">
+        <div class="section-label">El problema</div>
+        <h2>Cada mes, <span class="dim">el mismo ritual.</span></h2>
+        <p>Toda empresa con abonos enfrenta el mismo dolor mensual: facturar a mano, conciliar contra el banco, perseguir a quien no pagó. Sin escala, sin orden, sin descanso.</p>
+        <p>Las herramientas existentes no fueron diseñadas para recurrencia. Son herramientas de facturación puntual usadas para algo que no son.</p>
+      </div>
+      <div class="problema-list reveal">
+        <div class="problema-row">
+          <span class="problema-num">i.</span>
+          <div class="problema-content">
+            <h3>Facturación manual</h3>
+            <p>Planillas de Excel, copiar-pegar cada mes, errores de tipeo, comprobantes olvidados que aparecen días después.</p>
+          </div>
+          <span class="problema-arrow">→</span>
+        </div>
+        <div class="problema-row">
+          <span class="problema-num">ii.</span>
+          <div class="problema-content">
+            <h3>ARCA impredecible</h3>
+            <p>Caídas del sistema en fechas clave. Sin reintentos automáticos, la factura simplemente no se emite.</p>
+          </div>
+          <span class="problema-arrow">→</span>
+        </div>
+        <div class="problema-row">
+          <span class="problema-num">iii.</span>
+          <div class="problema-content">
+            <h3>Conciliación caótica</h3>
+            <p>Cruzar pagos con facturas lleva horas. Nunca se sabe con certeza qué se cobró, qué está parcial y qué no.</p>
+          </div>
+          <span class="problema-arrow">→</span>
+        </div>
+        <div class="problema-row">
+          <span class="problema-num">iv.</span>
+          <div class="problema-content">
+            <h3>Cobranza reactiva</h3>
+            <p>El administrador recuerda quién debe cuando el problema ya es grande. Sin alertas. Sin orden. Sin escala.</p>
+          </div>
+          <span class="problema-arrow">→</span>
+        </div>
+        <div class="problema-row">
+          <span class="problema-num">v.</span>
+          <div class="problema-content">
+            <h3>Aumentos sin control</h3>
+            <p>En contexto inflacionario, actualizar precios manualmente significa siempre llegar tarde. El margen se erosiona en silencio.</p>
+          </div>
+          <span class="problema-arrow">→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section">
+  <div class="quote-content reveal">
+    <blockquote>
+      Cada hora que una empresa gasta en facturar, conciliar y perseguir pagos <span class="accent">es una hora</span> <span class="dim">que no está dedicando a crecer.</span>
+    </blockquote>
+    <cite>El propósito de billdr</cite>
+  </div>
+</section>
+
+<!-- SOLUCION -->
+<section class="solucion" id="producto">
+  <div class="bg-numeral left">III</div>
+  <div class="container">
+    <div class="solucion-header reveal">
+      <div class="section-label">La solución</div>
+      <h2>Una plataforma.<br><span class="accent">Un ciclo cerrado.</span></h2>
+      <p>Desde que se emite el comprobante hasta que se confirma el cobro, todo sucede sin intervención manual. Si ARCA se cae, billdr lo reintenta. Si un cliente no pagó, billdr lo recuerda.</p>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar reveal">
+        <span class="pillar-num">— 01 / Factura</span>
+        <h3>Emite</h3>
+        <p>Emisión automática según calendario. Todos los tipos de comprobante. Cola inteligente ante caídas de ARCA.</p>
+      </div>
+      <div class="pillar reveal">
+        <span class="pillar-num">— 02 / Actualiza</span>
+        <h3>Ajusta</h3>
+        <p>Reglas de aumento por porcentaje, monto fijo o índice. Simulador de impacto previo a la aplicación.</p>
+      </div>
+      <div class="pillar reveal">
+        <span class="pillar-num">— 03 / Concilia</span>
+        <h3>Cruza</h3>
+        <p>Registro de cobros, parciales, NC y ND. Vista facturado vs. cobrado en tiempo real, sin planillas.</p>
+      </div>
+      <div class="pillar reveal">
+        <span class="pillar-num">— 04 / Cobra</span>
+        <h3>Recuerda</h3>
+        <p>Recordatorios por email y WhatsApp. Secuencias configurables. Aging de deuda y ranking de morosos.</p>
+      </div>
+    </div>
+
+    <div class="dashboard-wrap reveal">
+      <div class="dashboard-meta">
+        <div><strong>fig. 01</strong> — Vista del producto</div>
+        <div>Una sola pantalla, todo el ciclo</div>
+      </div>
+      <div class="dashboard-mock">
+        <div class="dashboard-bar">
+          <div class="dashboard-dot"></div>
+          <div class="dashboard-dot"></div>
+          <div class="dashboard-dot"></div>
+          <div class="dashboard-url">app.billdr.ar/dashboard</div>
+        </div>
+        <div class="dashboard-body">
+          <h5 class="dashboard-title">Resumen <span class="accent">del mes</span></h5>
+          <div class="stat-grid">
+            <div class="stat-box">
+              <div class="stat-label">Facturado</div>
+              <div class="stat-value" data-counter="4.2" data-prefix="$" data-suffix="M">$0M</div>
+              <div class="stat-trend">↑ 12% vs. mes anterior</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Cobrado</div>
+              <div class="stat-value" data-counter="3.8" data-prefix="$" data-suffix="M">$0M</div>
+              <div class="stat-trend">90,4% del facturado</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Pendiente</div>
+              <div class="stat-value" data-counter="280" data-prefix="$" data-suffix="K">$0K</div>
+              <div class="stat-trend">8 facturas</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Vencido</div>
+              <div class="stat-value" data-counter="120" data-prefix="$" data-suffix="K">$0K</div>
+              <div class="stat-trend warn">3 facturas · revisar</div>
+            </div>
+          </div>
+          <div class="invoice-list">
+            <div class="invoice-row header">
+              <div>Comprobante</div>
+              <div>Cliente</div>
+              <div>Vencimiento</div>
+              <div>Importe</div>
+              <div>Estado</div>
+            </div>
+            <div class="invoice-row">
+              <div class="invoice-num">A 0001-00342</div>
+              <div>Estudio López &amp; Asoc.</div>
+              <div>15 abr</div>
+              <div>$185.000</div>
+              <div class="invoice-status paid">Cobrada</div>
+            </div>
+            <div class="invoice-row">
+              <div class="invoice-num">A 0001-00341</div>
+              <div>Naranja Marketing SRL</div>
+              <div>15 abr</div>
+              <div>$340.000</div>
+              <div class="invoice-status paid">Cobrada</div>
+            </div>
+            <div class="invoice-row">
+              <div class="invoice-num">B 0001-00340</div>
+              <div>Centro Médico Belgrano</div>
+              <div>10 abr</div>
+              <div>$92.500</div>
+              <div class="invoice-status pending" id="loopStatus">Pendiente</div>
+            </div>
+            <div class="invoice-row">
+              <div class="invoice-num">A 0001-00339</div>
+              <div>Academia Rosario IT</div>
+              <div>05 abr</div>
+              <div>$120.000</div>
+              <div class="invoice-status overdue">Vencida</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-big" id="funcionalidades">
+  <div class="bg-numeral right">IV</div>
+  <div class="container">
+    <div class="solucion-header reveal" style="margin-bottom: 0;">
+      <div class="section-label">Funcionalidades</div>
+      <h2>Todo lo que necesitás.<br><span class="accent">Nada que no uses.</span></h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-block reveal">
+        <div class="feature-block-meta"><span>01 — Emisión</span><span class="feature-block-tag mvp">MVP</span></div>
+        <h4>Motor de facturación <span class="accent">recurrente.</span></h4>
+        <p>Scheduler configurable, emisión masiva o individual, reintentos automáticos contra ARCA. Comprobantes A, B, C, E, X, NC y ND.</p>
+      </div>
+      <div class="feature-block reveal">
+        <div class="feature-block-meta"><span>02 — Catálogo</span><span class="feature-block-tag mvp">MVP</span></div>
+        <h4>Gestión de <span class="accent">clientes.</span></h4>
+        <p>Alta por CUIT/CUIL con autocompletado de razón social, condición frente al IVA, emails y etiquetas para segmentación.</p>
+      </div>
+      <div class="feature-block reveal">
+        <div class="feature-block-meta"><span>03 — Precios</span><span class="feature-block-tag mvp">MVP</span></div>
+        <h4>Reglas de aumento <span class="accent">con simulador.</span></h4>
+        <p>Aumentos por porcentaje, monto fijo o índice. Simulador de impacto antes de aplicar. Frecuencia totalmente configurable.</p>
+      </div>
+      <div class="feature-block reveal">
+        <div class="feature-block-meta"><span>04 — Cobranza</span><span class="feature-block-tag mvp">MVP</span></div>
+        <h4>Cobranza <span class="accent">automática.</span></h4>
+        <p>Secuencias por email, ejecución automática y panel de seguimiento. El equipo deja de perseguir pagos para siempre.</p>
+      </div>
+      <div class="feature-block reveal">
+        <div class="feature-block-meta"><span>05 — Conciliación</span><span class="feature-block-tag mvp">MVP</span></div>
+        <h4>Factura contra <span class="accent">cobro.</span></h4>
+        <p>Cobros manuales, parciales, NC y ND asociadas. Vista facturado vs. cobrado en tiempo real, sin exportar planillas.</p>
+      </div>
+      <div class="feature-block reveal">
+        <div class="feature-block-meta"><span>06 — Acceso</span><span class="feature-block-tag mvp">MVP</span></div>
+        <h4>Roles y <span class="accent">permisos.</span></h4>
+        <p>Admin, Operador y Auditor. Control de acceso granular para equipos. Exportación contable en PDF.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIO -->
+<section class="testimonio">
+  <div class="container">
+    <div class="reveal">
+      <p class="testimonio-quote">"ARCA cae el primero del mes, conciliar me lleva un día entero, y recalcular aumentos uno por uno me agota <span class="accent">antes de empezar."</span></p>
+      <div class="testimonio-author">
+        <span class="testimonio-author-line"></span>
+        Laura M., agencia de marketing — CABA
+        <span class="testimonio-author-line"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="precios">
+  <div class="bg-numeral left">V</div>
+  <div class="container">
+    <div class="pricing-header reveal">
+      <div class="section-label">Planes</div>
+      <h2>Precio claro. <span class="dim">Sin sorpresas.</span></h2>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-col reveal">
+        <div class="price-col-name">Starter</div>
+        <div class="price-amount">USD 49<span> /mes</span></div>
+        <div class="price-period">Hasta 20 clientes</div>
+        <ul class="price-features">
+          <li>Facturación recurrente automática</li>
+          <li>Integración ARCA con reintentos</li>
+          <li>Conciliación factura-cobro</li>
+          <li>1 usuario</li>
+          <li>Soporte por email</li>
+        </ul>
+        <a href="#contacto" class="price-cta">Empezar →</a>
+      </div>
+      <div class="price-col featured reveal">
+        <div class="price-col-name">Growth · Más elegido</div>
+        <div class="price-amount">USD 119<span> /mes</span></div>
+        <div class="price-period">Hasta 100 clientes</div>
+        <ul class="price-features">
+          <li>Todo lo de Starter</li>
+          <li>Reglas de aumento + simulador</li>
+          <li>Cobranza automática por email</li>
+          <li>Hasta 5 usuarios con roles</li>
+          <li>Soporte prioritario</li>
+        </ul>
+        <a href="#contacto" class="price-cta">Empezar →</a>
+      </div>
+      <div class="price-col reveal">
+        <div class="price-col-name">Pro</div>
+        <div class="price-amount">USD 249<span> /mes</span></div>
+        <div class="price-period">Clientes ilimitados</div>
+        <ul class="price-features">
+          <li>Todo lo de Growth</li>
+          <li>Usuarios ilimitados</li>
+          <li>Exportación contable avanzada</li>
+          <li>Onboarding asistido incluido</li>
+          <li>SLA y soporte dedicado</li>
+        </ul>
+        <a href="#contacto" class="price-cta">Hablar con ventas →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final" id="contacto">
+  <div class="container">
+    <div class="cta-final-content reveal">
+      <h2>Configurá una vez.<br><span class="accent">Cobrá siempre.</span></h2>
+      <div class="cta-final-actions">
+        <a href="#" class="btn btn-primary">Sumarme a la lista <span class="btn-arrow">→</span></a>
+        <a href="#" class="btn btn-secondary">Hablar con el equipo <span class="btn-arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="logo">billdr</a>
+        <p>Infraestructura de cobro para empresas de servicios en Argentina. Facturación recurrente, conciliación y cobro en una sola plataforma.</p>
+      </div>
+      <div class="footer-col">
+        <h6>Producto</h6>
+        <a href="#">Funcionalidades</a>
+        <a href="#">Precios</a>
+        <a href="#">Roadmap</a>
+        <a href="#">Changelog</a>
+      </div>
+      <div class="footer-col">
+        <h6>Recursos</h6>
+        <a href="#">Documentación</a>
+        <a href="#">Guía ARCA</a>
+        <a href="#">Casos</a>
+        <a href="#">Blog</a>
+      </div>
+      <div class="footer-col">
+        <h6>Empresa</h6>
+        <a href="#">Sobre nosotros</a>
+        <a href="#">Contacto</a>
+        <a href="#">Términos</a>
+        <a href="#">Privacidad</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 billdr · Buenos Aires</div>
+      <div>hola@billdr.ar</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // SCROLL PROGRESS BAR
+  const scrollProgress = document.getElementById('scrollProgress');
+  window.addEventListener('scroll', () => {
+    const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (window.scrollY / totalScroll) * 100;
+    scrollProgress.style.width = progress + '%';
+  });
+
+  // PARALLAX HERO GLOW
+  const heroGlow = document.getElementById('heroGlow');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY;
+    if (heroGlow && scrolled < 1000) {
+      heroGlow.style.transform = `translateX(-50%) translateY(${scrolled * 0.3}px)`;
+    }
+  });
+
+  // MARQUEE REACTIVE TO SCROLL
+  const marqueeTrack = document.getElementById('marqueeTrack');
+  let lastScroll = 0;
+  let scrollSpeed = 0;
+  let baseSpeed = 60;
+
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.scrollY;
+    scrollSpeed = Math.abs(currentScroll - lastScroll);
+    lastScroll = currentScroll;
+
+    if (marqueeTrack) {
+      const newDuration = Math.max(15, baseSpeed - scrollSpeed * 2);
+      marqueeTrack.style.animationDuration = newDuration + 's';
+    }
+  });
+
+  // Decelerate when not scrolling
+  setInterval(() => {
+    scrollSpeed = Math.max(0, scrollSpeed - 5);
+    if (marqueeTrack && scrollSpeed === 0) {
+      marqueeTrack.style.animationDuration = baseSpeed + 's';
+    }
+  }, 200);
+
+  // REVEAL ON SCROLL
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -80px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // COUNTERS ANIMATION
+  const animateCounter = (el) => {
+    const target = parseFloat(el.dataset.counter);
+    const prefix = el.dataset.prefix || '';
+    const suffix = el.dataset.suffix || '';
+    const duration = 2000;
+    const start = performance.now();
+
+    const update = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const current = target * eased;
+
+      let display;
+      if (target >= 100) {
+        display = Math.round(current);
+      } else {
+        display = current.toFixed(1);
+      }
+
+      el.textContent = prefix + display + suffix;
+
+      if (progress < 1) requestAnimationFrame(update);
+      else el.textContent = prefix + (target >= 100 ? Math.round(target) : target.toFixed(1)) + suffix;
+    };
+
+    requestAnimationFrame(update);
+  };
+
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.animated) {
+        entry.target.dataset.animated = 'true';
+        animateCounter(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('[data-counter]').forEach(el => counterObserver.observe(el));
+
+  // INVOICE STATUS LOOP
+  const loopStatus = document.getElementById('loopStatus');
+  if (loopStatus) {
+    const states = [
+      { class: 'pending', text: 'Pendiente' },
+      { class: 'paid', text: 'Cobrada' },
+      { class: 'pending', text: 'Pendiente' },
+      { class: 'overdue', text: 'Vencida' }
+    ];
+    let currentState = 0;
+
+    setInterval(() => {
+      currentState = (currentState + 1) % states.length;
+      loopStatus.classList.remove('pending', 'paid', 'overdue');
+      loopStatus.style.opacity = '0';
+      setTimeout(() => {
+        loopStatus.classList.add(states[currentState].class);
+        loopStatus.textContent = states[currentState].text;
+        loopStatus.style.opacity = '1';
+      }, 300);
+    }, 3000);
+  }
+
+  // 3D HOVER EFFECT ON PRICING CARDS
+  document.querySelectorAll('.price-col').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = (y - centerY) / 30;
+      const rotateY = (centerX - x) / 30;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
+</script>
+
+</body>
+</html>
